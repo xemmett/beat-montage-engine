@@ -1,0 +1,33 @@
+# Beat Montage Engine Configuration
+
+# Number of beats per clip (1 = cut on every beat, 2 = every 2 beats)
+beats_per_clip: 1
+
+# Style mapping: maps section types to clip query parameters
+style:
+  intro:
+    tags: ["religious", "low motion"]
+    max_motion: 0.3
+    max_silence: 0.8
+  
+  drop:
+    tags: ["night vision", "authority"]
+    min_motion: 0.6
+  
+  breakdown:
+    tags: ["surveillance"]
+    max_silence: 0.5
+  
+  outro:
+    tags: ["low motion"]
+    max_motion: 0.4
+
+# Optional: year range filters
+# year_min: 1980
+# year_max: 2000
+
+# Optional: source filter
+# source: "archive"  # or "youtube"
+
+
+
