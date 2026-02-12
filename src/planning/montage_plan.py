@@ -21,7 +21,7 @@ def create_montage_plan(
     timeline_slots: list[TimelineSlot],
     structure: StructureAnalysis,
     *,
-    style_config: Optional[dict] = None,
+    config: Optional[dict] = None,
 ) -> list[MontageSlot]:
     """
     Augment timeline with aesthetic intent based on musical structure.
@@ -29,11 +29,12 @@ def create_montage_plan(
     Args:
         timeline_slots: Timeline slots from beat analysis
         structure: Musical structure analysis
-        style_config: Optional style mapping (defaults to built-in)
+        config: Optional full config dict (style, min_tag_score, min_entity_confidence)
     
     Returns:
         List of montage slots with query parameters
     """
+    style_config = config.get("style") if config else None
     if style_config is None:
         style_config = {
             "intro": {"tags": ["religious", "low motion"], "max_motion": 0.3, "max_silence": 0.8},
@@ -41,6 +42,9 @@ def create_montage_plan(
             "breakdown": {"tags": ["surveillance"], "max_silence": 0.5},
             "outro": {"tags": ["low motion"], "max_motion": 0.4},
         }
+    
+    min_tag_score = 0.3 if config is None else config.get("min_tag_score", 0.3)
+    min_entity_confidence = 0.3 if config is None else config.get("min_entity_confidence", 0.3)
     
     # Map timeline slots to sections
     section_map = {}
@@ -60,7 +64,7 @@ def create_montage_plan(
             style = style_config[section_type]
         else:
             # Default style
-            style = {"tags": [], "min_motion": None, "max_motion": None, "max_silence": None}
+            style = {"tags": [], "entities": [], "min_motion": None, "max_motion": None, "max_silence": None}
         
         # Create query based on energy at this point
         energy_idx = int((slot.start / structure.duration) * len(structure.energy))
@@ -70,7 +74,9 @@ def create_montage_plan(
         # Adjust query based on energy
         query = ClipQuery(
             tags=style.get("tags", []),
-            min_tag_score=0.3,
+            entities=style.get("entities", []),
+            min_tag_score=style.get("min_tag_score", min_tag_score),
+            min_entity_confidence=style.get("min_entity_confidence", min_entity_confidence),
             min_motion=style.get("min_motion") or (0.4 if energy > 0.6 else None),
             max_motion=style.get("max_motion") or (0.3 if energy < 0.4 else None),
             max_silence=style.get("max_silence") or (0.7 if energy < 0.5 else 0.4),

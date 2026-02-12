@@ -21,6 +21,28 @@ class SelectedClip:
     trim_duration: float = 0.0  # How much of the clip to use
 
 
+def _fallback_query_any(query: ClipQuery) -> ClipQuery:
+    """
+    Create a relaxed query that prioritizes returning *some* clip.
+    Keeps coarse constraints like source/year, but removes tags, entities, and signal limits.
+    """
+    return ClipQuery(
+        tags=[],
+        entities=[],
+        min_tag_score=0.0,
+        min_entity_confidence=0.0,
+        min_motion=None,
+        max_motion=None,
+        max_silence=None,
+        min_brightness=None,
+        semantic_query=None,
+        year_min=query.year_min,
+        year_max=query.year_max,
+        source=query.source,
+        exclude_clip_ids=[],
+    )
+
+
 def select_clip_for_slot(
     query: ClipQuery,
     target_duration: float,
@@ -51,19 +73,17 @@ def select_clip_for_slot(
     candidates = query_clips(query, limit=100, randomize=True)
     
     if not candidates:
-        return None
+        # Fallback: if query is too strict, grab any clip (still respects source/year if set).
+        candidates = query_clips(_fallback_query_any(query), limit=200, randomize=True)
+        if not candidates:
+            return None
     
-    # Filter candidates by duration (prefer clips close to target, but allow some flexibility)
-    duration_tolerance = target_duration * 0.5  # Allow ±50% duration
-    suitable = [
-        c for c in candidates
-        if c["duration"] >= target_duration * 0.5  # At least 50% of target
-        and c["duration"] <= target_duration * 2.0  # At most 200% of target
-    ]
+    # Prefer candidates that can fully cover the slot, so we can trim down (no gaps).
+    suitable = [c for c in candidates if c["duration"] >= target_duration]
     
     if not suitable:
-        # Fall back to any candidate if none fit duration constraints
-        suitable = candidates[:10]
+        # Fall back to something close (best effort). Renderer will fill remaining audio if needed.
+        suitable = candidates[:50]
     
     # Select random clip from suitable candidates
     selected = random.choice(suitable)
@@ -138,6 +158,15 @@ def select_clips_for_montage(
             exclude_clip_ids=exclude_ids,
             random_seed=None,  # Don't reset seed for each selection
         )
+
+        # If we couldn't find a clip while avoiding repetition, allow repetition rather than leaving a hole.
+        if clip is None and avoid_repetition:
+            clip = select_clip_for_slot(
+                slot.query,
+                slot.timeline_slot.duration,
+                exclude_clip_ids=None,
+                random_seed=None,
+            )
         
         selected_clips.append(clip)
         if clip and avoid_repetition:

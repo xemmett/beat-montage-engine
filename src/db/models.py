@@ -44,6 +44,7 @@ class Clip(Base):
     embedding: Mapped["ClipEmbedding"] = relationship(back_populates="clip", cascade="all, delete-orphan", uselist=False)
     signals: Mapped["ClipSignals"] = relationship(back_populates="clip", cascade="all, delete-orphan", uselist=False)
     tags: Mapped[list["ClipTag"]] = relationship(back_populates="clip", cascade="all, delete-orphan")
+    entities: Mapped[list["ClipEntity"]] = relationship(back_populates="clip", cascade="all, delete-orphan")
 
     __table_args__ = (
         UniqueConstraint("source", "video_id", "start_time", "end_time", name="clips_unique_source_segment"),
@@ -75,6 +76,19 @@ class ClipTag(Base):
     )
 
 
+class ClipEntity(Base):
+    __tablename__ = "clip_entities"
+
+    clip_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("clips.id", ondelete="CASCADE"), primary_key=True
+    )
+    entity: Mapped[str] = mapped_column(Text, primary_key=True)
+    confidence: Mapped[float] = mapped_column(Float, nullable=False)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
+
+    clip: Mapped["Clip"] = relationship(back_populates="entities")
+
+
 class ClipSignals(Base):
     __tablename__ = "clip_signals"
 
@@ -93,6 +107,12 @@ class ClipSignals(Base):
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
 
     clip: Mapped["Clip"] = relationship(back_populates="signals")
+
+
+
+
+
+
 
 
 

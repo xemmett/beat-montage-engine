@@ -72,12 +72,7 @@ style:
 Then run:
 
 ```bash
-python -m src.pipeline.run \
-  --audio "C:\Users\mmttl\Music\ItsNotMeAnymore\mp3\Under Surveillance.mp3" \
-  --output montage.mp4 \
-  --config config.yaml \
-  --beats-per-clip 1 \
-  --seed 42
+python -m src.pipeline.run --audio "C:\Users\mmttl\Music\ItsNotMeAnymore\distracted.mp3" --output montage.mp4 --config config.yaml --beats-per-clip 1 --seed 42
 ```
 
 ## Options

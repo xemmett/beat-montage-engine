@@ -39,12 +39,11 @@ def run(
         raise typer.Exit(1)
     
     # Load config if provided
-    style_config = None
+    config_data = None
     if config and config.exists():
         import yaml
         with open(config) as f:
             config_data = yaml.safe_load(f)
-            style_config = config_data.get("style", None)
     
     console.print(f"[bold]Beat Montage Generator[/bold]")
     console.print(f"Audio: {audio}")
@@ -71,7 +70,7 @@ def run(
         
         # Stage 3: Montage Planning
         task4 = progress.add_task("Planning montage...", total=None)
-        montage_slots = create_montage_plan(timeline_slots, structure, style_config=style_config)
+        montage_slots = create_montage_plan(timeline_slots, structure, config=config_data)
         progress.update(task4, description=f"Planned {len(montage_slots)} montage slots")
         
         # Stage 4: Clip Retrieval

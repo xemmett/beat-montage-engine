@@ -1,0 +1,62 @@
+# Beat Montage Engine Configuration
+
+# Number of beats per clip (1 = cut on every beat, 2 = every 2 beats)
+beats_per_clip: 1
+
+# Min score/confidence for tag and entity matching (0.0–1.0)
+min_tag_score: 0.3
+min_entity_confidence: 0.3
+
+# Style mapping: maps section types to clip query parameters
+# style:
+#   intro:
+#     tags: ["close-up", "selfie", "soft light", "natural light", "reflection", "quiet", "blue hour", "skin"]
+#     max_motion: 0.3
+#     max_silence: 0.6
+  
+#   drop:
+#     tags: ["crowd", "city", "street", "night", "harsh light", "chaotic", "driving", "tense", "blur", "motion"]
+#     max_motion: 0.9
+#     max_silence: 0.1
+  
+#   breakdown:
+#     tags: ["shadow", "mirror", "room", "lonely", "grain", "low light", "through glass", "waiting", "past"]
+#     max_motion: 0.2
+#     max_silence: 0.7
+  
+#   outro:
+#     tags: ["coast", "wide", "golden hour", "calm", "field", "summer", "silhouette", "travel", "still"]
+#     max_motion: 0.4
+#     max_silence: 0.5
+style:
+  intro:
+    tags: ["silhouette", "soft light", "firelight", "rain"]
+    entities: ["dog"]  # Optional: require clips to contain these entities
+    max_motion: 0.3
+    max_silence: 0.6
+  
+  drop:
+    tags: ["scrolling headlines", "media frenzy", "social media feed", "online argument", "culture war", "hard shadows", "neon lighting", "digital glitch"]
+    entities: ["dog"]
+    max_motion: 0.95
+    max_silence: 0.05
+  
+  breakdown:
+    tags: ["empty corridor", "fog", "rain", "mechanical interior", "hard shadows"]
+    max_motion: 0.2
+    max_silence: 0.7
+  
+  outro:
+    tags: ["wide landscape", "silhouette", "firelight", "fog"]
+    # entities: ["person"]
+    max_motion: 0.4
+    max_silence: 0.5
+
+  
+
+# Optional: year range filters
+# year_min: 1980
+# year_max: 2000
+
+# Optional: source filter
+# source: "archive"  # or "youtube"

@@ -17,3 +17,6 @@ data/
 *.egg-info/
 inputs/
 outputs/
+
+*.mp4
+*.json
