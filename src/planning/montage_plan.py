@@ -65,21 +65,25 @@ def create_montage_plan(
         else:
             # Default style
             style = {"tags": [], "entities": [], "min_motion": None, "max_motion": None, "max_silence": None}
-        
-        # Create query based on energy at this point
-        energy_idx = int((slot.start / structure.duration) * len(structure.energy))
-        energy_idx = min(energy_idx, len(structure.energy) - 1)
-        energy = structure.energy[energy_idx] if energy_idx >= 0 else 0.5
-        
-        # Adjust query based on energy
+
+        # Only include fields that are defined in style. Omit = no filter for that dimension.
+        # This lets users define just description, just tags, or any combination.
+        tags = style.get("tags") or []
+        entities = style.get("entities") or []
+        description = (style.get("description") or "").strip() or None
+        min_motion = style.get("min_motion") if "min_motion" in style else None
+        max_motion = style.get("max_motion") if "max_motion" in style else None
+        max_silence = style.get("max_silence") if "max_silence" in style else None
+
         query = ClipQuery(
-            tags=style.get("tags", []),
-            entities=style.get("entities", []),
+            tags=tags,
+            entities=entities,
+            semantic_query=description,
             min_tag_score=style.get("min_tag_score", min_tag_score),
             min_entity_confidence=style.get("min_entity_confidence", min_entity_confidence),
-            min_motion=style.get("min_motion") or (0.4 if energy > 0.6 else None),
-            max_motion=style.get("max_motion") or (0.3 if energy < 0.4 else None),
-            max_silence=style.get("max_silence") or (0.7 if energy < 0.5 else 0.4),
+            min_motion=min_motion,
+            max_motion=max_motion,
+            max_silence=max_silence,
         )
         
         montage_slots.append(

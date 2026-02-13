@@ -30,27 +30,19 @@ min_entity_confidence: 0.3
 #     max_silence: 0.5
 style:
   intro:
-    tags: ["silhouette", "soft light", "firelight", "rain"]
-    entities: ["dog"]  # Optional: require clips to contain these entities
-    max_motion: 0.3
-    max_silence: 0.6
+    description: "large crowds, figures in the dark, solemn loneliness, dog, meaningful, bright lights, dancing, groups, friendship"
   
   drop:
-    tags: ["scrolling headlines", "media frenzy", "social media feed", "online argument", "culture war", "hard shadows", "neon lighting", "digital glitch"]
-    entities: ["dog"]
-    max_motion: 0.95
-    max_silence: 0.05
+    description: "large crowds, figures in the dark, solemn loneliness, dog, meaningful, bright lights, dancing, groups, friendship"
+  
   
   breakdown:
-    tags: ["empty corridor", "fog", "rain", "mechanical interior", "hard shadows"]
-    max_motion: 0.2
-    max_silence: 0.7
+    description: "large crowds, figures in the dark, solemn loneliness, dog, meaningful, bright lights, dancing, groups, friendship"
+  
   
   outro:
-    tags: ["wide landscape", "silhouette", "firelight", "fog"]
-    # entities: ["person"]
-    max_motion: 0.4
-    max_silence: 0.5
+    description: "large crowds, figures in the dark, solemn loneliness, dog, meaningful, bright lights, dancing, groups, friendship"
+  
 
   
 

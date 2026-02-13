@@ -1,11 +1,7 @@
 from __future__ import annotations
 
 import os
-import random
-from pathlib import Path
-from typing import Optional
-
-import os
+import uuid
 import random
 from pathlib import Path
 from typing import Optional
@@ -14,7 +10,6 @@ from dotenv import load_dotenv
 from sqlalchemy import func, select, text
 from sqlalchemy.orm import Session
 
-# Import local database models and session
 from src.db.models import Clip, ClipEmbedding, ClipEntity, ClipSignals, ClipTag
 from src.db.session import get_session_factory
 
@@ -94,7 +89,6 @@ def query_clips(
             base_query = base_query.where(Clip.year <= query.year_max)
         
         if query.exclude_clip_ids:
-            import uuid
             exclude_uuids = [uuid.UUID(id) for id in query.exclude_clip_ids if id]
             if exclude_uuids:
                 base_query = base_query.where(~Clip.id.in_(exclude_uuids))
@@ -130,20 +124,38 @@ def query_clips(
             base_query = base_query.where(ClipEntity.entity.in_(query.entities))
             base_query = base_query.where(ClipEntity.confidence >= query.min_entity_confidence)
         
-        # Handle semantic search
-        if query.semantic_query:
-            # This would require CLIP model - for now, we'll use tag-based fallback
-            # In production, you'd encode the query and use pgvector
-            pass
-        
-        # Get results
-        if randomize:
-            base_query = base_query.order_by(func.random())
+        # Handle semantic search: use pgvector path when description/semantic_query is set
+        use_semantic = bool((query.semantic_query or "").strip())
+        if use_semantic:
+            from src.db.semantic import run_semantic_search
+
+            rows = run_semantic_search(session, query, limit=limit * 2)
+            if not rows:
+                return []
+            # Build clip-like objects from rows
+            class _ClipRow:
+                pass
+            clips = []
+            for r in rows:
+                c = _ClipRow()
+                c.id, c.source, c.video_id, c.filepath = r.id, r.source, r.video_id, r.filepath
+                c.start_time, c.end_time, c.duration = r.start_time, r.end_time, r.duration
+                c.year, c.created_at = r.year, r.created_at
+                clips.append(c)
+            needs_signals = any([
+                query.min_motion is not None,
+                query.max_motion is not None,
+                query.max_silence is not None,
+                query.min_brightness is not None,
+            ])
         else:
-            base_query = base_query.order_by(Clip.created_at.desc())
-        
-        base_query = base_query.limit(limit)
-        clips = session.scalars(base_query).all()
+            # Non-semantic path: ORM filters
+            if randomize:
+                base_query = base_query.order_by(func.random())
+            else:
+                base_query = base_query.order_by(Clip.created_at.desc())
+            base_query = base_query.limit(limit)
+            clips = session.scalars(base_query).all()
         
         # Load related data
         clip_ids = [c.id for c in clips]

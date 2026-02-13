@@ -8,27 +8,30 @@ min_tag_score: 0.8
 min_entity_confidence: 0.8
 
 # Style mapping: maps section types to clip query parameters
+# Style: define any combination of fields. Use only what you need.
+# description = semantic search (CLIP); tags/entities = filter; motion/silence = signal filters
 style:
   intro:
     tags: ["calm", "ambient"]
-    # entities: ["person", "face"]  # Optional: require clips to contain these entities
+    # description: "peaceful sunrise over water"  # Semantic search - use alone or with tags
+    # entities: ["person", "face"]
     max_motion: 1.0
     max_silence: 1.0
   
   drop:
     tags: ["running", "night"]
-    # entities: ["car", "crowd"]
+    # description: "chaotic crowd chasing"
     max_motion: 1.0
     max_silence: 1.0
   
   breakdown:
-    tags: ["calm", "coast"]
-    max_motion: 1.0
-    max_silence: 1.0
+    # Example: description-only (no tags/entities)
+    description: "lonely figure in empty room"
+    max_motion: 0.2
+    max_silence: 0.8
   
   outro:
     tags: ["crowd"]
-    # entities: ["person"]
     max_motion: 0.4
 
 # Optional: year range filters
